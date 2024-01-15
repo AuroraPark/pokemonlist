@@ -38,10 +38,11 @@ for (let i = 1; i <= 151; i++) {
   const img = document.createElement('img');
   img.src = `${BaseURL}${i}.png`;
   const span = document.createElement('span');
-  span.innerHTML = `# ${i}`;
+  span.innerHTML = `${i}`;
   pokemonList.appendChild(img);
   pokemonList.appendChild(span);
   document.querySelector('.container').appendChild(pokemonList);
+
   pokemonList.addEventListener('click', function () {
     if (battle.children.length < 2) {
       document.querySelector('.battle').appendChild(this);
@@ -164,8 +165,9 @@ printDelay();
 //     console.log('error', e);
 //   });
 
+// 함수로 API 불러오기
 const loadPokemons = async () => {
-  const baseURL = 'https://pokeapi.co/api/v2/pasdfokemon-species/';
+  const baseURL = 'https://pokeapi.co/api/v2/pokemon-species/';
   try {
     for (let i = 1; i <= 151; i++) {
       const res = await fetch(`${baseURL}${i}`);
@@ -177,4 +179,43 @@ const loadPokemons = async () => {
   }
 };
 
-loadPokemons();
+// Axios 이용 하기
+// axios
+//   .get('https://pokeapi.co/api/v2/pokemon-species/150')
+//   .then(response => {
+//     console.log('response', response);
+//   })
+//   .catch(e => console.log('error', e));
+
+// Axios 함수
+const getPokemon = async id => {
+  try {
+    const res = await axios.get(
+      `https://pokeapi.co/api/v2/pokemon-species/${id}`,
+    );
+
+    return res.data.names[2].name;
+  } catch (e) {
+    console.log('error', e);
+  }
+};
+
+// Axios 를 활용한 포켓몬 이름 알려주는 함수
+// 컨테이너 안에 있는 디브를 클릭하면 해당 정보를 가지고와서 이름을 보여줄 수 있게끔 구성
+const containerDivs = document.querySelectorAll('.container > div');
+for (let div of containerDivs) {
+  div.addEventListener('click', function () {
+    getPokemonName(parseInt(this.innerText));
+  });
+}
+
+// 이름을 보여주는 함수 (API 사용)
+const participant = document.querySelector('.participant');
+const getPokemonName = async function (id) {
+  const name = await getPokemon(id);
+  const newString = document.createElement('span');
+  newString.innerText = name + ' ';
+  if (participant.children.length < 2) {
+    participant.appendChild(newString);
+  }
+};
