@@ -200,6 +200,17 @@ const getPokemon = async id => {
   }
 };
 
+const getENPokemon = async enname => {
+  try {
+    const res = await axios.get(
+      `https://pokeapi.co/api/v2/pokemon-species/${enname}`,
+    );
+    return res.data.id;
+  } catch (e) {
+    console.log('error', e);
+  }
+};
+
 // Axios 를 활용한 포켓몬 이름 알려주는 함수
 // 컨테이너 안에 있는 디브를 클릭하면 해당 정보를 가지고와서 이름을 보여줄 수 있게끔 구성
 const containerDivs = document.querySelectorAll('.container > div');
@@ -217,5 +228,53 @@ const getPokemonName = async function (id) {
   newString.innerText = name + ' ';
   if (participant.children.length < 2) {
     participant.appendChild(newString);
+  }
+};
+
+// 검색 기능 추가
+const form = document.querySelector('#searchform');
+const nameinput = document.querySelector('#nameinput');
+const searchbtn = document.querySelector('#searchbtn');
+const imagesContainer = document.querySelector('.imagesContainer');
+
+form.addEventListener('submit', async function (e) {
+  e.preventDefault();
+  imagesContainer.innerHTML = '';
+  const searchTerm = form.elements.query.value;
+  const searchlist = await searchKR(searchTerm);
+});
+
+// 한글 검색 기능 추가
+const searchKR = async function (krname) {
+  axios
+    .get('/pokemonNameMapping.json')
+    .then(response => {
+      const data = response.data;
+
+      // 이름 검색
+      const searchQuery = krname;
+      const results = Object.keys(data)
+        .filter(key => key.includes(searchQuery))
+        .map(key => ({
+          koreanName: key,
+          englishName: data[key],
+        }));
+      makeImages(results);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+};
+
+const makeImages = async function (shows) {
+  for (let show of shows) {
+    const id = await getENPokemon(show.englishName);
+    krname = show.koreanName;
+    const img = document.createElement('img');
+    img.src = `${BaseURL + id}.png`;
+    const span = document.createElement('span');
+    span.textContent = id + ' ' + krname;
+    imagesContainer.appendChild(img);
+    imagesContainer.appendChild(span);
   }
 };
